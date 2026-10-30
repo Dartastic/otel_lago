@@ -1,15 +1,16 @@
-// Licensed under the Dartastic Pro Software License Agreement.
+// Licensed under the Apache License, Version 2.0
 // Copyright 2025-2026 Mindful Software LLC d/b/a Dartastic.io, All rights reserved.
 
-import 'package:dartastic_opentelemetry/dartastic_opentelemetry.dart';
+import 'package:dartastic_opentelemetry_api/dartastic_opentelemetry_api.dart';
 
 import 'otel_lago_suppression.dart';
 
 const _tracerName = 'dartastic_otel_libs_lago';
 
-Tracer _tracer() => OTel.tracerProvider().getTracer(_tracerName);
+APITracer _tracer() => OTelAPI.tracerProvider().getTracer(_tracerName);
 
 class LagoResult {
+  /// Creates a result.
   const LagoResult({
     this.organizationId,
     this.entityKind,
@@ -82,8 +83,13 @@ class LagoResult {
   final int? statusCode;
 }
 
+/// What a traced call returned: the value for the caller plus fields
+/// recorded on the span.
 class LagoCallResult<T> {
+  /// Creates a call result.
   const LagoCallResult({required this.value, this.result});
+
+  /// The value returned to the caller.
   final T value;
   final LagoResult? result;
 }
@@ -112,86 +118,86 @@ Future<T> tracedLago<T>({
   final span = _tracer().startSpan(
     'lago $operation',
     kind: SpanKind.client,
-    attributes: OTel.attributesFromMap(m),
+    attributes: OTelAPI.attributesFromMap(m),
   );
   try {
     final r = await invoke();
     if (r.result != null) {
       final extras = <Attribute<Object>>[];
       if (r.result!.organizationId != null) {
-        extras.add(OTel.attributeString(
+        extras.add(OTelAPI.attributeString(
           'lago.organization.id',
           r.result!.organizationId!,
         ));
       }
       if (r.result!.entityKind != null) {
-        extras.add(OTel.attributeString(
+        extras.add(OTelAPI.attributeString(
           'lago.entity.kind',
           r.result!.entityKind!,
         ));
       }
       if (r.result!.entityId != null) {
-        extras.add(OTel.attributeString(
+        extras.add(OTelAPI.attributeString(
           'lago.entity.id',
           r.result!.entityId!,
         ));
       }
       if (r.result!.externalCustomerId != null) {
-        extras.add(OTel.attributeString(
+        extras.add(OTelAPI.attributeString(
           'lago.customer.external_id',
           r.result!.externalCustomerId!,
         ));
       }
       if (r.result!.subscriptionExternalId != null) {
-        extras.add(OTel.attributeString(
+        extras.add(OTelAPI.attributeString(
           'lago.subscription.external_id',
           r.result!.subscriptionExternalId!,
         ));
       }
       if (r.result!.subscriptionStatus != null) {
-        extras.add(OTel.attributeString(
+        extras.add(OTelAPI.attributeString(
           'lago.subscription.status',
           r.result!.subscriptionStatus!,
         ));
       }
       if (r.result!.planCode != null) {
-        extras.add(OTel.attributeString(
+        extras.add(OTelAPI.attributeString(
           'lago.plan.code',
           r.result!.planCode!,
         ));
       }
       if (r.result!.billableMetricCode != null) {
-        extras.add(OTel.attributeString(
+        extras.add(OTelAPI.attributeString(
           'lago.billable_metric.code',
           r.result!.billableMetricCode!,
         ));
       }
       if (r.result!.aggregationType != null) {
-        extras.add(OTel.attributeString(
+        extras.add(OTelAPI.attributeString(
           'lago.billable_metric.aggregation_type',
           r.result!.aggregationType!,
         ));
       }
       if (r.result!.eventTransactionId != null) {
-        extras.add(OTel.attributeString(
+        extras.add(OTelAPI.attributeString(
           'lago.event.transaction_id',
           r.result!.eventTransactionId!,
         ));
       }
       if (r.result!.batchSize != null) {
-        extras.add(OTel.attributeInt(
+        extras.add(OTelAPI.attributeInt(
           'lago.batch.size',
           r.result!.batchSize!,
         ));
       }
       if (r.result!.acceptedEvents != null) {
-        extras.add(OTel.attributeInt(
+        extras.add(OTelAPI.attributeInt(
           'lago.events.accepted',
           r.result!.acceptedEvents!,
         ));
       }
       if (r.result!.rejectedEvents != null) {
-        extras.add(OTel.attributeInt(
+        extras.add(OTelAPI.attributeInt(
           'lago.events.rejected',
           r.result!.rejectedEvents!,
         ));
@@ -205,31 +211,31 @@ Future<T> tracedLago<T>({
         }
       }
       if (r.result!.invoiceNumber != null) {
-        extras.add(OTel.attributeString(
+        extras.add(OTelAPI.attributeString(
           'lago.invoice.number',
           r.result!.invoiceNumber!,
         ));
       }
       if (r.result!.invoiceStatus != null) {
-        extras.add(OTel.attributeString(
+        extras.add(OTelAPI.attributeString(
           'lago.invoice.status',
           r.result!.invoiceStatus!,
         ));
       }
       if (r.result!.amountCents != null) {
-        extras.add(OTel.attributeInt(
+        extras.add(OTelAPI.attributeInt(
           'lago.amount.cents',
           r.result!.amountCents!,
         ));
       }
       if (r.result!.currency != null) {
-        extras.add(OTel.attributeString(
+        extras.add(OTelAPI.attributeString(
           'lago.currency',
           r.result!.currency!,
         ));
       }
       if (r.result!.statusCode != null) {
-        extras.add(OTel.attributeInt(
+        extras.add(OTelAPI.attributeInt(
           'http.response.status_code',
           r.result!.statusCode!,
         ));
@@ -240,13 +246,13 @@ Future<T> tracedLago<T>({
           );
         }
       }
-      if (extras.isNotEmpty) span.addAttributes(OTel.attributes(extras));
+      if (extras.isNotEmpty) span.addAttributes(OTelAPI.attributes(extras));
     }
     return r.value;
   } catch (e, st) {
-    span.addAttributes(OTel.attributes([
-      OTel.attributeString(
-        ErrorResource.errorType.key,
+    span.addAttributes(OTelAPI.attributes([
+      OTelAPI.attributeString(
+        ErrorAttributes.errorType.key,
         e.runtimeType.toString(),
       ),
     ]));
